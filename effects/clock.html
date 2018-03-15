@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Clock</title>
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <style>
+        .char {
+            position: absolute;
+        }
+
+        .pixel {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #000;
+        }
+
+        .clock {
+
+        }
+    </style>
+</head>
+<body>
+<div class="clock"></div>
+<script>
+    Date.prototype.format = function (fmt) {
+        var o = {
+            "M+": this.getMonth() + 1,
+            "d+": this.getDate(),
+            "h+": this.getHours(),
+            "m+": this.getMinutes(),
+            "s+": this.getSeconds(),
+            "q+": Math.floor((this.getMonth() + 3) / 3),
+            "S": this.getMilliseconds()
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    };
+
+    function initMatrixCanvas(fontSize, font, isAsc) {
+        if (!window._t_m) {
+            var canvas = document.createElement("canvas");
+            var ctx = canvas.getContext("2d");
+
+            window._t_m = {
+                canvas: canvas,
+                ctx: ctx
+            };
+        }
+        _t_m.canvas.width = fontSize / (isAsc ? 2 : 1);
+        _t_m.canvas.height = fontSize;
+        _t_m.ctx.textAlign = "left";
+        _t_m.ctx.textBaseline = "top";
+        _t_m.ctx.font = fontSize + "px '" + font + "'";
+    }
+
+    function getMatrix(char, fontSize, font, isAsc) { // 取模
+        initMatrixCanvas(fontSize, font, isAsc);
+        var ctx = _t_m.ctx;
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, fontSize, fontSize);
+        ctx.fillStyle = "#FFF";
+        ctx.fillText(char, 0, 0);
+        var data = ctx.getImageData(0, 0, fontSize, fontSize).data;
+        var matrix = [];
+        for (var y = 0; y < fontSize; y++) {
+            matrix[y] = [];
+            for (var x = 0; x < fontSize; x++) {
+                matrix[y].push(data[y * fontSize * 4 + x * 4]);
+            }
+        }
+        return matrix;
+    }
+
+    function genPixelChar(char, fontSize, font) {
+        fontSize = fontSize || 16;
+        font = font || "宋体";
+        var isAsc = char.charCodeAt(0) < 127;
+        var matrix = getMatrix(char, fontSize, font, isAsc); // 这里可以预存字模, 这样就不依赖canvas了
+        var $Char = $('<div class="char"></div>');
+        $Char.css({ width: fontSize / (isAsc ? 2 : 1) * 3, height: fontSize * 3 })
+             .data("char", char)
+             .data("size", fontSize);
+
+        for (var y = 0; y < matrix.length; y++) {
+            for (var x = 0; x < matrix[y].length; x++) {
+                if (matrix[y][x]) {
+                    $('<div class="pixel"></div>')
+                        .css({ left: x * 3, top: y * 3 })
+                        .appendTo($Char);
+                }
+            }
+        }
+        return $Char;
+    }
+    
+    function colorfulCollapse($Char, time) {
+        time = time || 700;
+        var fontSize = $Char.data("size");
+        $Char.find('.pixel').each(function (index, el) {
+            var $el = $(el), pos = $el.position();
+            var targetLeft = pos.left - getRandom(5, 10);
+            if (getRandom(0, 1))
+                targetLeft = pos.left + getRandom(5, 10);
+
+            $el.css('background', getRandomColor())
+               .animate({ top: pos.top - 3, left: pos.left + (targetLeft - pos.left) * 0.2 }, time * 0.2)
+               .animate({ top: (fontSize + getRandom(2, 5)) * 3, left: targetLeft, opacity: 0 }, time * 0.8, 'easeInQuad');
+        });
+        setTimeout($Char.remove.bind($Char), time);
+    }
+
+    function getRandom(min, max) {
+        return min + Number(Math.random() * (max - min + 1)) << 0;
+    }
+
+    function getRandomColor() {
+        return '#' + (Math.random() * 0xffffff << 0).toString(16);
+    }
+
+    function initClock($el) {
+        var date = new Date().format('hh:mm:ss');
+        var w = 0;
+        for (var i in date) {
+            var $Char = genPixelChar(date[i]);
+            $Char.css('left', w);
+            $el.append($Char);
+            w += $Char.width();
+        }
+        setInterval(function () {
+            date = new Date().format('hh:mm:ss');
+            var $Chars = $el.find('.char');
+            for (var i in date) {
+                var $Char = $($Chars[i]);
+                if ($Char.data('char') !== date[i]) {
+                    $Char.remove();
+                    var $CharA = genPixelChar(date[i]),
+                        $CharB = genPixelChar(date[i]);
+                    $CharA.css('left', $Char.css('left'));
+                    $CharB.css('left', $Char.css('left'));
+                    $el.append($CharA).append($CharB);
+                    colorfulCollapse($CharB);
+                }
+            }
+        }, 1000);
+    }
+
+    initClock($('.clock'));
+</script>
+</body>
+</html>
