@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        :root {
+            --dur: 0.3s;
+            --dur2: 0.15s;
+            font-size: 16px;
+        }
+
+        .lever {
+            position: relative;
+            left: 50%;
+            top: 50%;
+            width: 12em;
+            height: 12em;
+            margin-left: -6em;
+            margin-top: -6em;
+            border-radius: 100%;
+            box-shadow: 0 2em 2em rgba(0,0,0,0.3);
+
+            background-image: radial-gradient(1em 1.5em at 50% 50%, rgb(204,204,204) 25%, rgb(170,170,170) 49%, rgba(170,170,170,0) 50%),
+            radial-gradient(0.65em 1em at 50% 53%, rgb(68,68,68), rgba(68,68,68,0)),
+            radial-gradient(0.75em 0.75em at 55% 45%, rgb(255,255,255), rgba(255,255,255,0)),
+            radial-gradient(0.5em 0.4em at 43% 56%, rgba(255,255,255,0.5), rgba(255,255,255,0)),
+            radial-gradient(0.5em 0.4em at 55% 57%, rgba(255,255,255,0.6), rgba(255,255,255,0)),
+            radial-gradient(0.5em 0.4em at 50% 60%, rgba(255,255,255,0.6), rgba(255,255,255,0)),
+            radial-gradient(100% 100% at 50% 50%, rgb(238,238,238), rgb(170,170,170) 10%, rgb(0,0,0) 18%, rgb(0,0,0) 21%, rgb(153,153,153) 21.5%, rgb(153,153,153) 24%, rgba(153,153,153,0) 24.5%, rgba(221,221,221,0) 30%, rgb(221,221,221) 30.5%, rgb(221,221,221) 33%, rgb(68,68,68) 33.5%, rgb(68,68,68) 35%, rgba(68,68,68,0) 35.5%, rgba(221,221,221,0) 41%, rgb(221,221,221) 41.5%, rgb(238,238,238) 45%, rgb(68,68,85) 45.5%, rgb(68,68,85) 49%, rgba(68,68,85,0) 50%),
+            radial-gradient(2em 2em at 35% 20%, rgb(255,255,255), rgba(255,255,255,0) 2em),
+            radial-gradient(2em 2em at 65% 80%, rgb(255,255,255), rgba(255,255,255,0) 2em),
+            radial-gradient(2em 2em at 80% 35%, rgb(255,255,255), rgba(255,255,255,0) 2em),
+            radial-gradient(2em 2em at 20% 65%, rgb(255,255,255), rgba(255,255,255,0) 2em),
+            radial-gradient(100% 100% at center, rgb(170,170,170) 49%, rgba(170,170,170,0) 50%);
+        }
+
+        .body, .top {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+        }
+
+        .top {
+            background:
+                    radial-gradient(35% 25% at 50% 25%, rgb(136,136,153) 20%, rgba(136,136,153,0)),
+                    radial-gradient(1em 0.75em at 32% 75%, rgb(102,102,102), rgba(102,102,102,0)),
+                    radial-gradient(1em 0.75em at 65% 78%, rgb(102,102,102), rgba(102,102,102,0)),
+                    radial-gradient(100% 100% at center, rgb(68,68,68) 49.5%, rgba(68,68,68,0) 50%);
+            box-shadow:
+                    -2em 4em 2em rgba(0,0,0,0.3),
+                    -2em 5em 4em rgba(0,0,0,0.2),
+                    -2em 7em 4em rgba(0,0,0,0.2),
+                    -2em 9em 4em rgba(0,0,0,0.2),
+                    -2em 11em 4em rgba(0,0,0,0.2);
+            border-radius: 50%;
+            width: 4em;
+            height: 4em;
+            transform: translate(100%,-50%);
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .body {
+            background-color: #333;
+            border-radius: 15em;
+            box-shadow: 0 0 1em #667 inset;
+            width: 7.5em;
+            height: 4em;
+            transform: translate(0.5em,-50%);
+        }
+    </style>
+</head>
+<body>
+<div class="lever left">
+    <div class="body"></div>
+    <div class="top"></div>
+</div>
+拖动控制<br>
+接下来写控制球之类的?
+<script>
+  var $lever = $('.lever');
+  var $body = $('body');
+
+  function swayLever (pctLeft) { // pct -1 ~ 1
+    var bodyWidth = 4 + Math.abs(pctLeft * 3.5);
+    var bodyLeft = -3.75 + pctLeft * 4.25 + (7.5 - bodyWidth) / 2;
+    $lever.find('.body').css({
+      width: bodyWidth + 'em',
+      transform: 'translate(' + bodyLeft + 'em,-50%)'
+    });
+    var topLeft = -50 + pctLeft * 150;
+    var topShadowLeft = -2 * pctLeft;
+    $lever.find('.top').css({
+      transform: 'translate(' + topLeft + '%,-50%)',
+      'box-shadow':
+      topShadowLeft + 'em 4em 2em rgba(0,0,0,0.3),\n' +
+      topShadowLeft + 'em 5em 4em rgba(0,0,0,0.2),\n' +
+      topShadowLeft + 'em 7em 4em rgba(0,0,0,0.2),\n' +
+      topShadowLeft + 'em 9em 4em rgba(0,0,0,0.2),\n' +
+      topShadowLeft + 'em 11em 4em rgba(0,0,0,0.2)'
+    });
+    var leverLeft = 0.5 * pctLeft;
+    $lever.css({
+      'background-position': leverLeft + 'em 0, ' + leverLeft + 'em 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0'
+    });
+  }
+
+  swayLever(0);
+  $body.attr('unselectable','on')
+    .css({
+      '-moz-user-select':'none',
+      '-o-user-select':'none',
+      '-khtml-user-select':'none', /* you could also put this in a class */
+      '-webkit-user-select':'none',/* and add the CSS class here instead */
+      '-ms-user-select':'none',
+      'user-select':'none'
+    }).bind('selectstart', function(){ return false; });
+
+  var swaying = false;
+  var lastEvent = null;
+  var lastPctLeft = 0;
+  $lever.find('.top').mousedown(function () {
+    swaying = true;
+  });
+
+  $body.mouseup(function () {
+    swaying = false;
+    lastEvent = null;
+    $({ val: lastPctLeft }).animate({ val: 0 }, {
+      duration: 500,
+      easing: 'easeOutElastic',
+      step: swayLever
+    });
+    lastPctLeft = 0;
+  });
+
+  $body.mousemove(function (e) {
+    if (!swaying) return;
+    if (!lastEvent) lastEvent = e;
+
+    var diffX = e.clientX - lastEvent.clientX;
+    var diffY = e.clientY - lastEvent.clientY;
+    lastPctLeft += diffX / (16 * 6);
+    if (lastPctLeft < -1) lastPctLeft = -1;
+    if (lastPctLeft > 1) lastPctLeft = 1;
+    swayLever(lastPctLeft);
+
+    lastEvent = e;
+  });
+</script>
+</body>
+</html>
